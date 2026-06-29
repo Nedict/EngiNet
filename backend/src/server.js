@@ -1,9 +1,15 @@
 require("dotenv").config();
 
 const app = require("./app");
+const env = require("./config/env");
+const testConnection = require("./config/testConnection");
 
-const PORT = process.env.PORT || 5000;
+async function startServer() {
+  await testConnection();
 
-app.listen(PORT, () => {
-    console.log(`🚀 EngiNet API running on port ${PORT}`);
-});
+  app.listen(env.port, () => {
+    console.log(`🚀 EngiNet API running on port ${env.port}`);
+  });
+}
+
+startServer();
