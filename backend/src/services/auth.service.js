@@ -1,21 +1,39 @@
 const supabase = require("../config/supabase");
+const { success, error } = require("../utils/response");
 
 exports.register = async (req, res) => {
+    try {
 
-};
+        const {
+            email,
+            password,
+            accountType
+        } = req.body;
 
-exports.login = async (req, res) => {
+        const { data, error: authError } =
+            await supabase.auth.admin.createUser({
+                email,
+                password,
+                email_confirm: false
+            });
 
-};
+        if (authError) {
+            return error(res, authError.message, 400);
+        }
 
-exports.logout = async (req, res) => {
+        return success(
+            res,
+            "Account created successfully.",
+            {
+                user: data.user,
+                accountType
+            },
+            201
+        );
 
-};
+    } catch (err) {
 
-exports.forgotPassword = async (req, res) => {
+        return error(res, err.message);
 
-};
-
-exports.resetPassword = async (req, res) => {
-
+    }
 };
