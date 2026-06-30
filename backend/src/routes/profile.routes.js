@@ -14,9 +14,14 @@ router.get(
     profileController.getProfile
 );
 
+const {
+    validateProfile
+} = require("../validations/profile.validation");
+
 router.put(
     "/",
     authenticate,
+    validateProfile,
     profileController.updateProfile
 );
 
