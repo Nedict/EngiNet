@@ -109,4 +109,49 @@ exports.uploadResume = async (req, res) => {
 
 };
 
-exports.uploadPhoto = async (req, res) => {};
+exports.uploadPhoto = async (req, res) => {
+
+    try {
+
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: "Photo is required."
+            });
+        }
+
+        const path = `${req.user.id}/avatar`;
+
+        await storageService.uploadFile(
+            "avatars",
+            path,
+            req.file
+        );
+
+        const url = storageService.getPublicUrl(
+            "avatars",
+            path
+        );
+
+        await supabase
+            .from("profiles")
+            .update({
+                avatar_url: url
+            })
+            .eq("id", req.user.id);
+
+        return res.json({
+            success: true,
+            avatar: url
+        });
+
+    } catch (err) {
+
+        return res.status(500).json({
+            success: false,
+            message: err.message
+        });
+
+    }
+
+};
