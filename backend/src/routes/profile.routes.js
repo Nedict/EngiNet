@@ -5,6 +5,9 @@ const router = express.Router();
 const profileController = require("../controllers/profile.controller");
 
 const {
+    uploadSingle
+} = require("../middleware/upload.middleware");
+const {
     authenticate
 } = require("../middleware/auth.middleware");
 
@@ -28,12 +31,14 @@ router.put(
 router.post(
     "/resume",
     authenticate,
+    uploadSingle,
     profileController.uploadResume
 );
 
 router.post(
     "/photo",
     authenticate,
+    uploadSingle,
     profileController.uploadPhoto
 );
 
