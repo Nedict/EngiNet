@@ -2,44 +2,29 @@ const express = require("express");
 
 const router = express.Router();
 
+const authenticate = require("../middleware/auth.middleware");
+
 const profileController = require("../controllers/profile.controller");
 
-const {
-    uploadSingle
-} = require("../middleware/upload.middleware");
-const {
-    authenticate
-} = require("../middleware/auth.middleware");
+const validate = require("../middleware/validate.middleware");
 
-router.get(
-    "/",
-    authenticate,
-    profileController.getProfile
-);
+const upload = require("../middleware/upload.middleware");
 
 const {
-    validateProfile
+    updateProfileSchema
 } = require("../validations/profile.validation");
 
-router.put(
-    "/",
-    authenticate,
-    validateProfile,
-    profileController.updateProfile
-);
+router.get("/me", authenticate, profileController.getMyProfile);
+
+router.put("/me", authenticate, profileController.updateMyProfile);
+
+router.get("/:id", authenticate, profileController.getProfileById);
 
 router.post(
-    "/resume",
+    "/avatar",
     authenticate,
-    uploadSingle,
-    profileController.uploadResume
-);
-
-router.post(
-    "/photo",
-    authenticate,
-    uploadSingle,
-    profileController.uploadPhoto
+    upload.single("avatar"),
+    profileController.uploadAvatar
 );
 
 module.exports = router;

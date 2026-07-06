@@ -1,16 +1,21 @@
 const supabase = require("../config/supabase");
 
-exports.authenticate = async (req, res, next) => {
+module.exports = async (req, res, next) => {
+
     try {
 
-        const token = req.headers.authorization?.replace("Bearer ", "");
+        const authHeader = req.headers.authorization;
 
-        if (!token) {
+        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+
             return res.status(401).json({
                 success: false,
-                message: "Access token is required."
+                message: "Authentication token is missing."
             });
+
         }
+
+        const token = authHeader.split(" ")[1];
 
         const {
             data: { user },
@@ -18,13 +23,34 @@ exports.authenticate = async (req, res, next) => {
         } = await supabase.auth.getUser(token);
 
         if (error || !user) {
+
             return res.status(401).json({
                 success: false,
                 message: "Invalid or expired token."
             });
+
         }
 
-        req.user = user;
+        const {
+            data: profile,
+            error: profileError
+        } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", user.id)
+            .single();
+
+        if (profileError || !profile) {
+
+            return res.status(404).json({
+                success: false,
+                message: "Profile not found."
+            });
+
+        }
+
+        req.auth = user;
+        req.user = profile;
 
         next();
 
@@ -36,4 +62,5 @@ exports.authenticate = async (req, res, next) => {
         });
 
     }
+
 };

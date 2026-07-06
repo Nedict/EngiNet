@@ -1,4 +1,10 @@
-"scripts": {
-  "start": "node src/server.js",
-  "dev": "nodemon src/server.js"
+{
+  "name": "enginet-backend",
+  "version": "1.0.0",
+  "description": "EngiNet Backend API",
+  "main": "server.js",
+  "scripts": {
+    "dev": "nodemon server.js",
+    "start": "node server.js"
+  }
 }

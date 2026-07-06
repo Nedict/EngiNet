@@ -1,81 +1,179 @@
 const supabase = require("../config/supabase");
-const { success, error } = require("../utils/response");
 
 exports.register = async (req, res) => {
+
     try {
+
         const {
             email,
             password,
-            accountType
+            full_name,
+            account_type
         } = req.body;
 
-        const { data, error: authError } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
+
             email,
+
             password,
+
             options: {
+
                 data: {
-                    account_type: accountType
+                    full_name,
+                    account_type
                 }
+
             }
+
         });
 
-        if (authError) {
-            return error(res, authError.message, 400);
+        if (error) {
+
+            return res.status(400).json({
+                success: false,
+                message: error.message
+            });
+
         }
 
-        return success(
-            res,
-            "Registration successful. Please verify your email.",
-            data,
-            201
-        );
+        return res.status(201).json({
+
+            success: true,
+
+            message: "Registration successful. Please verify your email.",
+
+            user: data.user
+
+        });
 
     } catch (err) {
-        return error(res, err.message);
+
+        return res.status(500).json({
+
+            success: false,
+
+            message: err.message
+
+        });
+
     }
+
 };
 
 exports.login = async (req, res) => {
+
     try {
 
         const { email, password } = req.body;
 
-        const { data, error: authError } =
+        const { data, error } =
             await supabase.auth.signInWithPassword({
+
                 email,
+
                 password
+
             });
 
-        if (authError) {
-            return error(res, authError.message, 401);
+        if (error) {
+
+            return res.status(401).json({
+
+                success: false,
+
+                message: error.message
+
+            });
+
         }
 
-        return success(
-            res,
-            "Login successful.",
-            data
-        );
+        return res.json({
+
+            success: true,
+
+            session: data.session,
+
+            user: data.user
+
+        });
 
     } catch (err) {
-        return error(res, err.message);
+
+        return res.status(500).json({
+
+            success: false,
+
+            message: err.message
+
+        });
+
     }
+
 };
 
 exports.logout = async (req, res) => {
 
-    await supabase.auth.signOut();
+    try {
 
-    return success(
-        res,
-        "Logged out successfully."
-    );
+        const { error } = await supabase.auth.signOut();
+
+        if (error) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message: error.message
+
+            });
+
+        }
+
+        return res.json({
+
+            success: true,
+
+            message: "Logged out successfully."
+
+        });
+
+    } catch (err) {
+
+        return res.status(500).json({
+
+            success: false,
+
+            message: err.message
+
+        });
+
+    }
 
 };
 
-exports.forgotPassword = async (req, res) => {
+exports.me = async (req, res) => {
 
-};
+    try {
 
-exports.resetPassword = async (req, res) => {
+        return res.json({
+
+            success: true,
+
+            user: req.user
+
+        });
+
+    } catch (err) {
+
+        return res.status(500).json({
+
+            success: false,
+
+            message: err.message
+
+        });
+
+    }
 
 };

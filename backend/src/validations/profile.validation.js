@@ -1,36 +1,27 @@
 const { z } = require("zod");
 
-const profileSchema = z.object({
+const updateProfileSchema = z.object({
 
-    full_name: z.string().min(2),
+    full_name: z.string().min(2).max(100).optional(),
 
-    engineering_field: z.string().min(2),
+    username: z.string().min(3).max(30).optional(),
 
-    headline: z.string().optional(),
+    bio: z.string().max(1000).optional(),
 
-    bio: z.string().optional(),
+    engineering_discipline: z.string().optional(),
 
-    location: z.string().optional(),
+    location: z.string().max(100).optional(),
 
-    skills: z.array(z.string()).optional(),
+    website: z.string().url().optional(),
 
-    education: z.array(z.any()).optional(),
+    phone: z.string().max(20).optional(),
 
-    experience: z.array(z.any()).optional()
+    avatar_url: z.string().url().optional(),
+
+    cover_image_url: z.string().url().optional()
 
 });
 
-exports.validateProfile = (req, res, next) => {
-
-    const result = profileSchema.safeParse(req.body);
-
-    if (!result.success) {
-        return res.status(400).json({
-            success: false,
-            errors: result.error.flatten()
-        });
-    }
-
-    next();
-
+module.exports = {
+    updateProfileSchema
 };

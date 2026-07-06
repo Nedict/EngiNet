@@ -1,155 +1,218 @@
-const supabase = require("../config/supabase");
-const { success, error } = require("../utils/response");
 const storageService = require("./storage.service");
 
-exports.getProfile = async (req, res) => {
+const supabase = require("../config/supabase");
+
+exports.getMyProfile = async (req, res) => {
+
     try {
-        const { data, error: dbError } = await supabase
+
+        const { data, error } = await supabase
+
             .from("profiles")
+
             .select("*")
+
             .eq("id", req.user.id)
+
             .single();
 
-        if (dbError) {
-            return error(res, dbError.message, 404);
-        }
+        if (error)
+            throw error;
 
-        return success(res, "Profile retrieved successfully.", data);
+        return res.json({
+
+            success: true,
+
+            profile: data
+
+        });
 
     } catch (err) {
-        return error(res, err.message);
+
+        return res.status(500).json({
+
+            success: false,
+
+            message: err.message
+
+        });
+
     }
+
 };
 
-exports.updateProfile = async (req, res) => {
+exports.getProfileById = async (req, res) => {
+
     try {
 
-        const {
-            full_name,
-            engineering_field,
-            headline,
-            bio,
-            location,
-            skills,
-            education,
-            experience
-        } = req.body;
+        const { id } = req.params;
 
-        const { data, error: dbError } = await supabase
+        const { data, error } = await supabase
+
             .from("profiles")
-            .update({
-                full_name,
-                engineering_field,
-                headline,
-                bio,
-                location,
-                skills,
-                education,
-                experience
-            })
+
+            .select("*")
+
+            .eq("id", id)
+
+            .single();
+
+        if (error)
+            throw error;
+
+        return res.json({
+
+            success: true,
+
+            profile: data
+
+        });
+
+    } catch (err) {
+
+        return res.status(500).json({
+
+            success: false,
+
+            message: err.message
+
+        });
+
+    }
+
+};
+
+exports.updateMyProfile = async (req, res) => {
+
+    try {
+
+        const allowedFields = [
+    "full_name",
+    "username",
+    "bio",
+    "engineering_discipline",
+    "location",
+    "website",
+    "phone",
+    "avatar_url",
+    "cover_image_url"
+];
+
+const updates = {};
+
+allowedFields.forEach(field => {
+
+    if (req.body[field] !== undefined) {
+
+        updates[field] = req.body[field];
+
+    }
+
+});
+
+        const { data, error } = await supabase
+
+            .from("profiles")
+
+            .update(updates)
+
             .eq("id", req.user.id)
+
             .select()
+
             .single();
 
-        if (dbError) {
-            return error(res, dbError.message, 400);
-        }
-
-        return success(res, "Profile updated successfully.", data);
-
-    } catch (err) {
-        return error(res, err.message);
-    }
-};
-
-exports.uploadResume = async (req, res) => {
-
-    try {
-
-        if (!req.file) {
-            return res.status(400).json({
-                success: false,
-                message: "Resume is required."
-            });
-        }
-
-        const path = `${req.user.id}/resume.pdf`;
-
-        await storageService.uploadFile(
-            "resumes",
-            path,
-            req.file
-        );
-
-        const url = storageService.getPublicUrl(
-            "resumes",
-            path
-        );
-
-        await supabase
-            .from("profiles")
-            .update({
-                resume_url: url
-            })
-            .eq("id", req.user.id);
+        if (error)
+            throw error;
 
         return res.json({
+
             success: true,
-            resume: url
+
+            message: "Profile updated successfully.",
+
+            profile: data
+
         });
 
     } catch (err) {
 
         return res.status(500).json({
+
             success: false,
+
             message: err.message
+
         });
 
     }
 
 };
 
-exports.uploadPhoto = async (req, res) => {
+exports.uploadAvatar = async (req, res) => {
 
     try {
 
         if (!req.file) {
+
             return res.status(400).json({
+
                 success: false,
-                message: "Photo is required."
+
+                message: "No file uploaded."
+
             });
+
         }
 
-        const path = `${req.user.id}/avatar`;
+        const extension = req.file.originalname.split(".").pop();
 
-        await storageService.uploadFile(
+        const path = `${req.user.id}/avatar.${extension}`;
+
+        const url = await storageService.uploadFile(
+
             "avatars",
+
             path,
+
             req.file
+
         );
 
-        const url = storageService.getPublicUrl(
-            "avatars",
-            path
-        );
+        const { data, error } = await supabase
 
-        await supabase
             .from("profiles")
+
             .update({
+
                 avatar_url: url
+
             })
-            .eq("id", req.user.id);
+
+            .eq("id", req.user.id)
+
+            .select()
+
+            .single();
+
+        if (error) throw error;
 
         return res.json({
+
             success: true,
-            avatar: url
+
+            avatar: data.avatar_url
+
         });
 
     } catch (err) {
 
         return res.status(500).json({
+
             success: false,
+
             message: err.message
+
         });
 
     }
