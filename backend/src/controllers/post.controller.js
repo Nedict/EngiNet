@@ -1,6 +1,19 @@
 const postService = require("../services/post.service");
 
-exports.getPosts = postService.getPosts;
-exports.createPost = postService.createPost;
-exports.updatePost = postService.updatePost;
-exports.deletePost = postService.deletePost;
+exports.createPost = (req, res) =>
+    postService.createPost(req, res);
+
+exports.getFeed = (req, res) =>
+    postService.getFeed(req, res);
+
+exports.getMyPosts = (req, res) =>
+    postService.getMyPosts(req, res);
+
+exports.getPost = (req, res) =>
+    postService.getPost(req, res);
+
+exports.updatePost = (req, res) =>
+    postService.updatePost(req, res);
+
+exports.deletePost = (req, res) =>
+    postService.deletePost(req, res);
