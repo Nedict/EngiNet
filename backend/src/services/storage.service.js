@@ -1,27 +1,88 @@
+const { randomUUID } = require("crypto");
+const path = require("path");
+
 const supabase = require("../config/supabase");
 
-exports.uploadFile = async (bucket, path, file) => {
+class StorageService {
 
-    const { error } = await supabase.storage
+    async uploadFile(bucket, file, folder = "") {
 
-        .from(bucket)
+        if (!file) {
+            throw new Error("No file uploaded.");
+        }
 
-        .upload(path, file.buffer, {
+        const extension = path.extname(file.originalname);
 
-            upsert: true,
+        const fileName = `${randomUUID()}${extension}`;
 
-            contentType: file.mimetype
+        const filePath = folder
+            ? `${folder}/${fileName}`
+            : fileName;
 
-        });
+        const { error } = await supabase.storage
 
-    if (error) throw error;
+            .from(bucket)
 
-    const { data } = supabase.storage
+            .upload(filePath, file.buffer, {
 
-        .from(bucket)
+                contentType: file.mimetype,
 
-        .getPublicUrl(path);
+                upsert: false
 
-    return data.publicUrl;
+            });
 
-};
+        if (error) {
+            throw error;
+        }
+
+        const { data } = supabase.storage
+
+            .from(bucket)
+
+            .getPublicUrl(filePath);
+
+        return {
+
+            bucket,
+
+            path: filePath,
+
+            url: data.publicUrl,
+
+            fileName
+
+        };
+
+    }
+
+    async deleteFile(bucket, filePath) {
+
+        const { error } = await supabase.storage
+
+            .from(bucket)
+
+            .remove([filePath]);
+
+        if (error) {
+            throw error;
+        }
+
+        return true;
+
+    }
+
+    getPublicUrl(bucket, filePath) {
+
+        const { data } = supabase.storage
+
+            .from(bucket)
+
+            .getPublicUrl(filePath);
+
+        return data.publicUrl;
+
+    }
+
+}
+
+module.exports = new StorageService();
