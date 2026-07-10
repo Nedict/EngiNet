@@ -93,3 +93,51 @@ exports.getLatestFeed = async (req, res) => {
     }
 
 };
+
+exports.getTrendingFeed = async (req, res) => {
+
+    try {
+
+        const { data, error } = await supabase
+
+            .from("posts")
+
+            .select(`
+                *,
+                likes(count),
+                comments(count)
+            `)
+
+            .eq("visibility", "public")
+
+            .order("created_at", {
+
+                ascending: false
+
+            })
+
+            .limit(25);
+
+        if (error) throw error;
+
+        return res.json({
+
+            success: true,
+
+            trending: data
+
+        });
+
+    } catch (err) {
+
+        return res.status(500).json({
+
+            success: false,
+
+            message: err.message
+
+        });
+
+    }
+
+};
