@@ -113,3 +113,113 @@ exports.getMessages = async (req, res) => {
     }
 
 };
+
+exports.editMessage = async (req, res) => {
+
+    try {
+
+        const { messageId } = req.params;
+
+        const {
+
+            message
+
+        } = req.body;
+
+        const { data, error } = await supabase
+
+            .from("messages")
+
+            .update({
+
+                message,
+
+                is_edited: true,
+
+                updated_at: new Date().toISOString()
+
+            })
+
+            .eq("id", messageId)
+
+            .eq("sender_id", req.user.id)
+
+            .select()
+
+            .single();
+
+        if (error) throw error;
+
+        return res.json({
+
+            success: true,
+
+            message: data
+
+        });
+
+    } catch (err) {
+
+        return res.status(500).json({
+
+            success: false,
+
+            message: err.message
+
+        });
+
+    }
+
+};
+
+exports.deleteMessage = async (req, res) => {
+
+    try {
+
+        const { messageId } = req.params;
+
+        const { data, error } = await supabase
+
+            .from("messages")
+
+            .update({
+
+                is_deleted: true,
+
+                message: "[Message deleted]",
+
+                updated_at: new Date().toISOString()
+
+            })
+
+            .eq("id", messageId)
+
+            .eq("sender_id", req.user.id)
+
+            .select()
+
+            .single();
+
+        if (error) throw error;
+
+        return res.json({
+
+            success: true,
+
+            message: data
+
+        });
+
+    } catch (err) {
+
+        return res.status(500).json({
+
+            success: false,
+
+            message: err.message
+
+        });
+
+    }
+
+};
