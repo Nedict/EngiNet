@@ -123,3 +123,92 @@ exports.getChats = async (req, res) => {
     }
 
 };
+
+exports.getChat = async (req, res) => {
+
+    try {
+
+        const { chatId } = req.params;
+
+        const { data, error } = await supabase
+
+            .from("chats")
+
+            .select(`
+                *,
+                chat_members(
+                    profile_id,
+                    profiles(
+                        id,
+                        first_name,
+                        last_name,
+                        profile_picture
+                    )
+                )
+            `)
+
+            .eq("id", chatId)
+
+            .single();
+
+        if (error) throw error;
+
+        return res.json({
+
+            success: true,
+
+            chat: data
+
+        });
+
+    } catch (err) {
+
+        return res.status(500).json({
+
+            success: false,
+
+            message: err.message
+
+        });
+
+    }
+
+};
+
+exports.deleteChat = async (req, res) => {
+
+    try {
+
+        const { chatId } = req.params;
+
+        const { error } = await supabase
+
+            .from("chats")
+
+            .delete()
+
+            .eq("id", chatId);
+
+        if (error) throw error;
+
+        return res.json({
+
+            success: true,
+
+            message: "Chat deleted successfully."
+
+        });
+
+    } catch (err) {
+
+        return res.status(500).json({
+
+            success: false,
+
+            message: err.message
+
+        });
+
+    }
+
+};
