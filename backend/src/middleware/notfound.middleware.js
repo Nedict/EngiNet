@@ -1,8 +1,2 @@
-module.exports = (req, res) => {
-
-    res.status(404).json({
-        success: false,
-        message: "Route Not Found"
-    });
-
-};
+const response = require("../utils/response");
+module.exports = (req, res) => response.fail(res, 404, "Route not found", "NOT_FOUND");

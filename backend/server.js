@@ -1,13 +1,11 @@
 require("dotenv").config();
-
 const app = require("./src/app");
+const env = require("./src/config/env");
 
-const http = require("http");
+async function start() {
+  env.validateEnv();
+  app.listen(env.port, () => console.log(`EngiNet API listening on port ${env.port}`));
+}
 
-const server = http.createServer(app);
-
-const PORT = process.env.PORT || 5000;
-
-server.listen(PORT, () => {
-    console.log(`🚀 EngiNet running on port ${PORT}`);
-});
+if (require.main === module) start().catch((error) => { console.error(error.message); process.exit(1); });
+module.exports = start;

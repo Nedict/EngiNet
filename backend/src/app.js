@@ -1,43 +1,23 @@
 const express = require("express");
-
 const cors = require("cors");
-
 const helmet = require("helmet");
-
 const compression = require("compression");
-
 const morgan = require("morgan");
-
 const cookieParser = require("cookie-parser");
-
-const authRoutes = require("./routes/auth.routes");
-
-const profileRoutes = require("./routes/profile.routes");
+const env = require("./config/env");
+const routes = require("./routes");
+const notFound = require("./middleware/notfound.middleware");
+const errorHandler = require("./middleware/error.middleware");
 
 const app = express();
-
-app.use(cors());
-
+app.disable("x-powered-by");
+app.use(cors({ origin: env.clientUrl, credentials: true }));
 app.use(helmet());
-
 app.use(compression());
-
-app.use(morgan("dev"));
-
-app.use(express.json());
-
+if (env.nodeEnv !== "test") app.use(morgan(env.nodeEnv === "production" ? "combined" : "dev"));
+app.use(express.json({ limit: "1mb" }));
 app.use(cookieParser());
-
-app.use("/api/auth", authRoutes);
-
-app.use("/api/profile", profileRoutes);
-
-app.get("/", (req, res) => {
-    res.json({
-        success: true,
-        app: "EngiNet",
-        status: "Running"
-    });
-});
-
+app.use("/api", routes);
+app.use(notFound);
+app.use(errorHandler);
 module.exports = app;
